@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Response;
-use Pest\Plugins\Tia\WatchDefaults\Inertia;
+use Inertia\Inertia;
 
 class ChatController extends Controller
 {
-    public function index():Response
+    public function index()
     {
-        return Inertia::render('Chat');
+        return Inertia::render('chat');
     }
 }
