@@ -2,6 +2,7 @@
 
 use App\Ai\Agents\Assistant;
 use App\Models\User;
+use Illuminate\Support\Str;
 
 test('guest user goes to login page', function () {
     $this->get('/chat')->assertRedirect('/login');
@@ -11,7 +12,7 @@ test('the chat page renders', function () {
     $this->actingAs(User::factory()->create())
         ->get('/chat')
         ->assertInertia(
-            fn ($page) => $page
+            fn($page) => $page
                 ->component('chat')
         );
 });
@@ -21,6 +22,7 @@ test('an answer streams back', function () {
 
     $response = $this->actingAs(User::factory()->create())
         ->post('/chat/stream', [
+            'id' => (string) Str::uuid7(),
             'messages' => [
                 [
                     'id' => 'msg_1',

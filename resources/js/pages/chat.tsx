@@ -1,21 +1,39 @@
-import { useChat } from '@ai-sdk/react';
-import { Head } from '@inertiajs/react';
-import { DefaultChatTransport } from 'ai';
-import { Composer } from '@/components/chat/composer';
-import { MessageList } from '@/components/chat/message-list';
-import { xsrfHeader } from '@/lib/csrf';
-import { index, stream } from '@/routes/chat';
-import { EmptyState } from '@/components/chat/empty-state';
+import { useChat } from "@ai-sdk/react";
+import { Head, router } from "@inertiajs/react";
+import { DefaultChatTransport, UIMessage } from "ai";
+import { Composer } from "@/components/chat/composer";
+import { MessageList } from "@/components/chat/message-list";
+import { xsrfHeader } from "@/lib/csrf";
+import { EmptyState } from "@/components/chat/empty-state";
+import { index, show, stream } from "@/routes/chat";
 
-export default function Chat() {
+type Props = {
+    id: string;
+    messages: UIMessage[];
+};
+
+export default function ChatPage(props: Props) {
+    return <Chat key={props.id} {...props} />;
+}
+
+function Chat({ id, messages: savedMessages }: Props) {
     const { messages, sendMessage, status } = useChat({
+        id,
+        messages: savedMessages,
         transport: new DefaultChatTransport({
             api: stream.url(),
             headers: xsrfHeader(),
         }),
+        onFinish: () => router.reload({ only: ["conversations"] }),
     });
 
-    const send = (message: string) => sendMessage({ text: message });
+    function send(message: string) {
+        void sendMessage({ text: message });
+
+        if (!messages.length) {
+            router.replace({ url: show.url(id), preserveState: true });
+        }
+    }
 
     return (
         <>
@@ -26,12 +44,12 @@ export default function Chat() {
                 ) : (
                     <EmptyState onPick={send} />
                 )}
-                <Composer onSend={send} busy={status !== 'ready'} />
+                <Composer onSend={send} busy={status !== "ready"} />
             </div>
         </>
     );
 }
 
-Chat.layout = {
-    breadcrumbs: [{ title: 'Chat', href: index() }],
+ChatPage.layout = {
+    breadcrumbs: [{ title: "Chat", href: index() }],
 };
