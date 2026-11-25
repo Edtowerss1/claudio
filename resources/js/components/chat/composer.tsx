@@ -2,11 +2,17 @@ import { ArrowUp } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 
-export function Composer({ onSend }: { onSend: (message: string) => void }) {
+export function Composer({
+    onSend,
+    busy,
+}: {
+    onSend: (message: string) => void;
+    busy: boolean;
+}) {
     const [message, setMessage] = useState('');
 
     function submit() {
-        if (!message.trim()) return;
+        if (!message.trim() || busy) return;
         onSend(message.trim());
         setMessage('');
     }

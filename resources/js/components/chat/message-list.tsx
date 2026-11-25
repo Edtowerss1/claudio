@@ -1,10 +1,19 @@
-export type ChatMessage = {
-    id: string;
-    role: 'user' | 'assistant';
-    message: string;
-};
+import type { ChatStatus, UIMessage } from 'ai';
+import { Thinking } from '@/components/chat/thinking';
 
-export function MessageList({ messages }: { messages: ChatMessage[] }) {
+function textOf(message: UIMessage) {
+    return message.parts
+        .map((part) => (part.type === 'text' ? part.text : ''))
+        .join('');
+}
+
+export function MessageList({
+    messages,
+    status,
+}: {
+    messages: UIMessage[];
+    status: ChatStatus;
+}) {
     return (
         <div className="flex-1 overflow-y-auto">
             <div className="mx-auto flex max-w-3xl flex-col gap-6 px-4 py-8">
@@ -14,14 +23,16 @@ export function MessageList({ messages }: { messages: ChatMessage[] }) {
                             key={message.id}
                             className="ml-auto max-w-[80%] rounded-3xl bg-muted px-5 py-2.5 whitespace-pre-wrap"
                         >
-                            {message.message}
+                            {textOf(message)}
                         </div>
                     ) : (
                         <div key={message.id} className="leading-7">
-                            {message.message}
+                            {textOf(message)}
                         </div>
                     ),
                 )}
+                {/* Sent, but no words back yet */}
+                {status === 'submitted' && <Thinking />}
             </div>
         </div>
     );
