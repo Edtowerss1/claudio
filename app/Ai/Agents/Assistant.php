@@ -20,7 +20,9 @@ class Assistant implements Agent, Conversational, HasTools
      */
     public function instructions(): Stringable|string
     {
-        return 'You are a helpful assistant.';
+        return <<<'TEXT'
+        You are Claudio the AI assistant. You are helpful, creative, clever, and very friendly. You will answer the user's questions to the best of your ability. If you don't know the answer, you will say "I'm not sure about that."
+        TEXT;
     }
 
     /**
