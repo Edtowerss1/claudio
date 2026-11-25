@@ -1,9 +1,9 @@
-import { Check, Copy } from "lucide-react";
-import { useRef } from "react";
-import type { ComponentProps } from "react";
-import { useClipboard } from "@/hooks/use-clipboard";
+import { Check, Copy } from 'lucide-react';
+import { useRef } from 'react';
+import type { ComponentProps } from 'react';
+import { useClipboard } from '@/hooks/use-clipboard';
 
-export function codeBlock({ children }: ComponentProps<"pre">) {
+export function codeBlock({ children }: ComponentProps<'pre'>) {
     const pre = useRef<HTMLPreElement>(null);
     const [isCopied, copy] = useClipboard();
 
@@ -19,8 +19,8 @@ export function codeBlock({ children }: ComponentProps<"pre">) {
             <button
                 type="button"
                 aria-label="Copy code"
-                onClick={() => copy(pre.current?.innerText ?? "")}
-                className="absolute top-2  right-2 rounded-md bg-white/10 p-1.5 text-white opacity-0 group-hover:opacity-100"
+                onClick={() => copy(pre.current?.innerText ?? '')}
+                className="absolute top-2 right-2 rounded-md bg-white/10 p-1.5 text-white opacity-0 group-hover:opacity-100"
             >
                 {isCopied ? (
                     <Check className="size-4" />

@@ -1,12 +1,12 @@
-import type { ChatStatus, UIMessage } from "ai";
-import { useEffect, useRef } from "react";
-import { Thinking } from "@/components/chat/thinking";
-import { Markdown } from "@/components/chat/markdown";
+import type { ChatStatus, UIMessage } from 'ai';
+import { useEffect, useRef } from 'react';
+import { Thinking } from '@/components/chat/thinking';
+import { Markdown } from '@/components/chat/markdown';
 
 function textOf(message: UIMessage) {
     return message.parts
-        .map((part) => (part.type === "text" ? part.text : ""))
-        .join("");
+        .map((part) => (part.type === 'text' ? part.text : ''))
+        .join('');
 }
 
 export function MessageList({
@@ -20,14 +20,14 @@ export function MessageList({
 
     // new words are added to the end of the list, so scroll to the bottom when that happens
     useEffect(() => {
-        end.current?.scrollIntoView({ behavior: "smooth" });
+        end.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
 
     return (
         <div className="flex-1 overflow-y-auto">
             <div className="mx-auto flex max-w-3xl flex-col gap-6 px-4 py-8">
                 {messages.map((message) =>
-                    message.role === "user" ? (
+                    message.role === 'user' ? (
                         <div
                             key={message.id}
                             className="ml-auto max-w-[80%] rounded-3xl bg-muted px-5 py-2.5 whitespace-pre-wrap"
@@ -39,7 +39,7 @@ export function MessageList({
                     ),
                 )}
                 {/* Sent, but no words back yet */}
-                {status === "submitted" && <Thinking />}
+                {status === 'submitted' && <Thinking />}
                 <div ref={end} />
             </div>
         </div>

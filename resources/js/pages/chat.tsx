@@ -1,11 +1,11 @@
-import { useChat } from "@ai-sdk/react";
-import { Head, router } from "@inertiajs/react";
-import { DefaultChatTransport, UIMessage } from "ai";
-import { Composer } from "@/components/chat/composer";
-import { MessageList } from "@/components/chat/message-list";
-import { xsrfHeader } from "@/lib/csrf";
-import { EmptyState } from "@/components/chat/empty-state";
-import { index, show, stream } from "@/routes/chat";
+import { useChat } from '@ai-sdk/react';
+import { Head, router } from '@inertiajs/react';
+import { DefaultChatTransport, UIMessage } from 'ai';
+import { Composer } from '@/components/chat/composer';
+import { MessageList } from '@/components/chat/message-list';
+import { xsrfHeader } from '@/lib/csrf';
+import { EmptyState } from '@/components/chat/empty-state';
+import { index, show, stream } from '@/routes/chat';
 
 type Props = {
     id: string;
@@ -24,7 +24,7 @@ function Chat({ id, messages: savedMessages }: Props) {
             api: stream.url(),
             headers: xsrfHeader(),
         }),
-        onFinish: () => router.reload({ only: ["conversations"] }),
+        onFinish: () => router.reload({ only: ['conversations'] }),
     });
 
     function send(message: string) {
@@ -44,12 +44,12 @@ function Chat({ id, messages: savedMessages }: Props) {
                 ) : (
                     <EmptyState onPick={send} />
                 )}
-                <Composer onSend={send} busy={status !== "ready"} />
+                <Composer onSend={send} busy={status !== 'ready'} />
             </div>
         </>
     );
 }
 
 ChatPage.layout = {
-    breadcrumbs: [{ title: "Chat", href: index() }],
+    breadcrumbs: [{ title: 'Chat', href: index() }],
 };
