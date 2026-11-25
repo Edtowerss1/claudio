@@ -4,6 +4,7 @@ use Illuminate\Support\Str;
 use App\Ai\Agents\Assistant;
 use App\Models\User;
 use App\Models\Conversation;
+use App\Ai\Agents\TitleWriter;
 
 
 function say(string $id, string $message): array
@@ -20,6 +21,7 @@ function say(string $id, string $message): array
     ];
 }
 
+beforeEach(fn() => TitleWriter::fake(['Meeting Edwin']));
 
 test('the first message saves the conversation', function () {
     Assistant::fake(['Hello Edwin!']);
@@ -31,10 +33,11 @@ test('the first message saves the conversation', function () {
         ->streamedContent();
 
     $conversation = Conversation::findOrFail($id);
-    expect($conversation->title)->toBe('Hi, I am Edwin!')
+    expect($conversation->title)->toBe('Meeting Edwin')
         ->and($conversation->participant->is($user))->toBeTrue()
         ->and($conversation->messages()->count())->toBe(2);
 });
+
 test('saved chat opens with its messages', function () {
     Assistant::fake(['Hello Edwin!']);
     $user = User::factory()->create();
@@ -50,6 +53,22 @@ test('saved chat opens with its messages', function () {
             ->where('id', $id)
             ->has('messages', 2)
     );
+});
+
+test('you can rename and delete your chat, but not anyone else\'s', function () {
+    $id = (string) Str::uuid7();
+    $owner = User::factory()->create();
+    $this->actingAs($owner)->post('/chat/stream', say($id, 'Hi, I am Neema'))->streamedContent();
+
+    $stranger = User::factory()->create();
+    $this->actingAs($stranger)->patch("/chat/{$id}", ['title' => 'Mine now'])->assertNotFound();
+    $this->actingAs($stranger)->delete("/chat/{$id}")->assertNotFound();
+
+    $this->actingAs($owner)->patch("/chat/{$id}", ['title' => 'Arusha plans']);
+    expect(Conversation::find($id)->title)->toBe('Arusha plans');
+
+    $this->actingAs($owner)->delete("/chat/{$id}")->assertRedirect('/chat');
+    expect(Conversation::find($id))->toBeNull();
 });
 
 test('nobody else can open, see or continue your conversation', function () {

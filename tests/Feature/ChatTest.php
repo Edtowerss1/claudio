@@ -1,8 +1,11 @@
 <?php
 
 use App\Ai\Agents\Assistant;
+use App\Ai\Agents\TitleWriter;
 use App\Models\User;
 use Illuminate\Support\Str;
+
+beforeEach(fn() => TitleWriter::fake(['Meeting Edwin']));
 
 test('guest user goes to login page', function () {
     $this->get('/chat')->assertRedirect('/login');
