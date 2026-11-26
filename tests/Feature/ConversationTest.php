@@ -1,11 +1,10 @@
 <?php
 
-use Illuminate\Support\Str;
 use App\Ai\Agents\Assistant;
-use App\Models\User;
-use App\Models\Conversation;
 use App\Ai\Agents\TitleWriter;
-
+use App\Models\Conversation;
+use App\Models\User;
+use Illuminate\Support\Str;
 
 function say(string $id, string $message): array
 {
@@ -13,15 +12,15 @@ function say(string $id, string $message): array
         'id' => $id,
         'messages' => [
             [
-                'id' => 'msg_' . Str::random(8),
+                'id' => 'msg_'.Str::random(8),
                 'role' => 'user',
                 'parts' => [['type' => 'text', 'text' => $message]],
             ],
-        ]
+        ],
     ];
 }
 
-beforeEach(fn() => TitleWriter::fake(['Meeting Edwin']));
+beforeEach(fn () => TitleWriter::fake(['Meeting Edwin']));
 
 test('the first message saves the conversation', function () {
     Assistant::fake(['Hello Edwin!']);
@@ -48,7 +47,7 @@ test('saved chat opens with its messages', function () {
         ->streamedContent();
 
     $this->get("/chat/{$id}")->assertInertia(
-        fn($page) => $page
+        fn ($page) => $page
             ->component('chat')
             ->where('id', $id)
             ->has('messages', 2)
@@ -69,6 +68,19 @@ test('you can rename and delete your chat, but not anyone else\'s', function () 
 
     $this->actingAs($owner)->delete("/chat/{$id}")->assertRedirect('/chat');
     expect(Conversation::find($id))->toBeNull();
+});
+
+test('try again replaces the last answer', function () {
+    Assistant::fake(['First answer', 'Better answer']);
+    $user = User::factory()->create();
+    $id = (string) Str::uuid7();
+    $firstMessage = say($id, 'Hi, I am Edwin!');
+    $this->actingAs($user)->post('/chat/stream', $firstMessage)->streamedContent();
+
+    $this->post('/chat/stream', [...$firstMessage, 'trigger' => 'regenerate-message'])->streamedContent();
+
+    $messages = Conversation::find($id)->messages()->orderBy('id')->pluck('content');
+    expect($messages->all())->toBe(['Hi, I am Edwin!', 'Better answer']);
 });
 
 test('nobody else can open, see or continue your conversation', function () {

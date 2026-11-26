@@ -17,14 +17,19 @@ export default function ChatPage(props: Props) {
 }
 
 function Chat({ id, messages: savedMessages }: Props) {
-    const { messages, sendMessage, status } = useChat({
+    const { messages, sendMessage, regenerate, status, stop } = useChat({
         id,
         messages: savedMessages,
         transport: new DefaultChatTransport({
             api: stream.url(),
             headers: xsrfHeader(),
         }),
-        onFinish: () => router.reload({ only: ['conversations'] }),
+        onFinish: ({ isError }) => {
+            // Keep the failed chat state so the user can retry.
+            if (!isError) {
+                router.reload({ only: ['conversations'] });
+            }
+        },
     });
 
     function send(message: string) {
@@ -40,11 +45,19 @@ function Chat({ id, messages: savedMessages }: Props) {
             <Head title="Chat" />
             <div className="flex h-[calc(100svh-6rem)] flex-col">
                 {messages.length ? (
-                    <MessageList messages={messages} status={status} />
+                    <MessageList
+                        messages={messages}
+                        status={status}
+                        onRegenerate={() => void regenerate()}
+                    />
                 ) : (
                     <EmptyState onPick={send} />
                 )}
-                <Composer onSend={send} busy={status !== 'ready'} />
+                <Composer
+                    onSend={send}
+                    onStop={stop}
+                    busy={status === 'submitted' || status === 'streaming'}
+                />
             </div>
         </>
     );

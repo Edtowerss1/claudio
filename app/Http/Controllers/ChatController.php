@@ -3,14 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Ai\Agents\Assistant;
-use Inertia\Inertia;
-use Illuminate\Http\Request;
-use Laravel\Ai\Vercel\Vercel;
-use Illuminate\Support\Str;
-use App\Models\Conversation;
 use App\Ai\Agents\TitleWriter;
+use App\Models\Conversation;
 use Illuminate\Http\RedirectResponse;
-
+use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use Inertia\Inertia;
+use Laravel\Ai\Vercel\Vercel;
 
 class ChatController extends Controller
 {
@@ -35,7 +34,7 @@ class ChatController extends Controller
         ]);
     }
 
-    public function update(Request $request, string $conversation) : RedirectResponse
+    public function update(Request $request, string $conversation): RedirectResponse
     {
         $request->user()->conversations()->findOrFail($conversation)->update(
             $request->validate(['title' => ['required', 'string', 'max:100']])
@@ -44,7 +43,7 @@ class ChatController extends Controller
         return back();
     }
 
-    public function destroy(Request $request, string $conversation) : RedirectResponse
+    public function destroy(Request $request, string $conversation): RedirectResponse
     {
         $conversation = $request->user()->conversations()->findOrFail($conversation);
         $conversation->messages()->delete();
@@ -64,7 +63,12 @@ class ChatController extends Controller
         $conversation = Conversation::find($request->id);
 
         // Ensure the conversation belongs to the authenticated user
-        abort_if($conversation && !$conversation->participant->is($user), 403);
+        abort_if($conversation && ! $conversation->participant->is($user), 403);
+
+        // try again: forget all messages except the first one, so we can regenerate the answer
+        if ($conversation && $request->input('trigger') === 'regenerate-message') {
+            $conversation->keepFirst(count($request->input('messages', [])) - 1);
+        }
 
         $isNewConversation = $conversation === null;
 
@@ -79,7 +83,7 @@ class ChatController extends Controller
             ->then(function () use ($isNewConversation, $conversation, $chat) {
                 // First answer done: name the chat. If that fails, keep the old title.
                 if ($isNewConversation) {
-                    rescue(fn() => $conversation->update([
+                    rescue(fn () => $conversation->update([
                         'title' => Str::limit((new TitleWriter)->prompt($chat->message()->content)->text, 60),
                     ]));
                 }

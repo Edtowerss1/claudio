@@ -111,6 +111,18 @@ return [
             ],
         ],
 
+        // gemini-backup is a backup provider for Gemini, in case the main provider is unavailable. It uses the same API key and URL as the main Gemini provider, but can be configured separately if needed.
+        'gemini-backup' => [
+            'driver' => 'gemini',
+            'key' => env('GEMINI_BACKUP_API_KEY', env('GEMINI_API_KEY')),
+            'url' => env('GEMINI_BACKUP_URL', env('GEMINI_URL', 'https://generativelanguage.googleapis.com/v1beta/')),
+            'models' => [
+                'text' => [
+                    'default' => env('GEMINI_BACKUP_MODEL', 'gemini-3.1-flash-lite'),
+                ],
+            ],
+        ],
+
         'groq' => [
             'driver' => 'groq',
             'key' => env('GROQ_API_KEY'),

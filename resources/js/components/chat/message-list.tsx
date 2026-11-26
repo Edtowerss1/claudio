@@ -2,6 +2,8 @@ import type { ChatStatus, UIMessage } from 'ai';
 import { useEffect, useRef } from 'react';
 import { Thinking } from '@/components/chat/thinking';
 import { Markdown } from '@/components/chat/markdown';
+import { RotateCcw } from 'lucide-react';
+import { ErrorNote } from './error-note';
 
 function textOf(message: UIMessage) {
     return message.parts
@@ -12,9 +14,11 @@ function textOf(message: UIMessage) {
 export function MessageList({
     messages,
     status,
+    onRegenerate,
 }: {
     messages: UIMessage[];
     status: ChatStatus;
+    onRegenerate: () => void;
 }) {
     const end = useRef<HTMLDivElement>(null);
 
@@ -38,8 +42,21 @@ export function MessageList({
                         <Markdown key={message.id}>{textOf(message)}</Markdown>
                     ),
                 )}
+
+                {status === 'ready' &&
+                    messages.at(-1)?.role === 'assistant' && (
+                        <button
+                            type="button"
+                            onClick={onRegenerate}
+                            className="mt-4 flex items-center gap-1 self-start text-sm text-muted-foreground hover:text-foreground"
+                        >
+                            <RotateCcw className="size-3.5" /> Try again
+                        </button>
+                    )}
+
                 {/* Sent, but no words back yet */}
                 {status === 'submitted' && <Thinking />}
+                {status === 'error' && <ErrorNote onRetry={onRegenerate} />}
                 <div ref={end} />
             </div>
         </div>
