@@ -1,6 +1,7 @@
 import { useChat } from '@ai-sdk/react';
 import { Head, router } from '@inertiajs/react';
 import { DefaultChatTransport, UIMessage } from 'ai';
+import { useState } from 'react';
 import { Composer } from '@/components/chat/composer';
 import { MessageList } from '@/components/chat/message-list';
 import { xsrfHeader } from '@/lib/csrf';
@@ -17,6 +18,7 @@ export default function ChatPage(props: Props) {
 }
 
 function Chat({ id, messages: savedMessages }: Props) {
+    const [smartest, setSmartest] = useState(false);
     const { messages, sendMessage, regenerate, status, stop } = useChat({
         id,
         messages: savedMessages,
@@ -33,7 +35,7 @@ function Chat({ id, messages: savedMessages }: Props) {
     });
 
     function send(message: string) {
-        void sendMessage({ text: message });
+        void sendMessage({ text: message }, {body: { smartest } });
 
         if (!messages.length) {
             router.replace({ url: show.url(id), preserveState: true });
@@ -48,7 +50,7 @@ function Chat({ id, messages: savedMessages }: Props) {
                     <MessageList
                         messages={messages}
                         status={status}
-                        onRegenerate={() => void regenerate()}
+                        onRegenerate={() => void regenerate({body: { smartest } })}
                     />
                 ) : (
                     <EmptyState onPick={send} />
@@ -57,6 +59,8 @@ function Chat({ id, messages: savedMessages }: Props) {
                     onSend={send}
                     onStop={stop}
                     busy={status === 'submitted' || status === 'streaming'}
+                    smartest={smartest}
+                    onSmartestChange={setSmartest}
                 />
             </div>
         </>

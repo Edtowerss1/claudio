@@ -19,17 +19,34 @@ class Assistant implements Agent, Conversational, HasTools
 {
     use Promptable, RemembersConversations;
 
+    public function __construct(public bool $isSmartest = false)
+    {
+        //
+    }
+
+    public function provider(): array
+    {
+        return [
+            'gemini' => $this->isSmartest ? config('ai.providers.gemini.models.text.smartest') : null,
+            'gemini-backup' => null,
+        ];
+    }
+
     /**
      * Get the instructions that the agent should follow.
      */
     public function instructions(): Stringable|string
     {
-        return <<<'TEXT'
-        You are Claudio the AI assistant.
-        You are helpful, creative, clever, and very friendly.
-        You will answer the user's questions to the best of your ability.
-        If you don't know the answer, you will say "I'm not sure about that."
+        $rules = <<<'TEXT'
+        You are Swali, a friendly and clear assistant.
+        Give direct answers first, then details if they help.
+        Use Markdown: short paragraphs, lists, and code blocks with a language.
         TEXT;
+
+        // The user's own instructions, from Settings > Personalization.
+        $about = $this->conversationParticipant()?->instructions;
+
+        return $about ? $rules . "\n\nWhat the user told you about themselves:\n" . $about : $rules;
     }
 
     /**

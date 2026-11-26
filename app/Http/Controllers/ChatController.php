@@ -63,7 +63,7 @@ class ChatController extends Controller
         $conversation = Conversation::find($request->id);
 
         // Ensure the conversation belongs to the authenticated user
-        abort_if($conversation && ! $conversation->participant->is($user), 403);
+        abort_if($conversation && !$conversation->participant->is($user), 403);
 
         // try again: forget all messages except the first one, so we can regenerate the answer
         if ($conversation && $request->input('trigger') === 'regenerate-message') {
@@ -77,13 +77,13 @@ class ChatController extends Controller
             'title' => Str::limit($chat->message()?->content ?? 'New Conversation', 40),
         ]);
 
-        return (new Assistant)
+        return (new Assistant(isSmartest: $request->boolean('smartest', false)))
             ->continue($conversation->id, as: $user)
             ->stream($chat)
             ->then(function () use ($isNewConversation, $conversation, $chat) {
                 // First answer done: name the chat. If that fails, keep the old title.
                 if ($isNewConversation) {
-                    rescue(fn () => $conversation->update([
+                    rescue(fn() => $conversation->update([
                         'title' => Str::limit((new TitleWriter)->prompt($chat->message()->content)->text, 60),
                     ]));
                 }
